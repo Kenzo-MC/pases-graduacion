@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  correo    String   @unique
+  password  String
+  rol       String   @default("admin")
+  createdAt DateTime @default(now())
+}
+
+model ActoGraduacion {
+  id                     Int      @id @default(autoincrement())
+  nombre                 String
+  fecha                  DateTime
+  hora                   String
+  lugar                  String
+  aforoMaximo            Int
+  invitadosPorGraduando  Int
+  estado                 String   @default("pendiente")
+  createdAt              DateTime @default(now())
+  graduandos             Graduando[]
+}
+
+model Graduando {
+  id        Int      @id @default(autoincrement())
+  cedula    String   @unique
+  nombre    String
+  correo    String
+  actoId    Int
+  acto      ActoGraduacion @relation(fields: [actoId], references: [id])
+  pases     Pase[]
+}
+
+model Pase {
+  id             Int       @id @default(autoincrement())
+  codigoQR       String    @unique
+  graduandoId    Int
+  graduando      Graduando @relation(fields: [graduandoId], references: [id])
+  numeroInvitado Int
+  nombreInvitado String?
+  utilizado      Boolean   @default(false)
+  fechaUso       DateTime?
+  puerta         String?
+  createdAt      DateTime  @default(now())
+}
