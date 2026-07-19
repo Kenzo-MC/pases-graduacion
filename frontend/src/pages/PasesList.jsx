@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export default function PasesList() {
   const { actoId } = useParams();
-  const { api } = useAuth();
+  const { api, rol } = useAuth();   // ← obtenemos el rol
   const navigate = useNavigate();
   const [pases, setPases] = useState([]);
   const [acto, setActo] = useState(null);
@@ -17,7 +19,7 @@ export default function PasesList() {
 
   const cargarDatos = async () => {
     try {
-      const resActo = await api.get(`/api/actos`);
+      const resActo = await api.get('/api/actos');
       const actoEncontrado = resActo.data.find(a => a.id === parseInt(actoId));
       setActo(actoEncontrado);
 
@@ -34,7 +36,7 @@ export default function PasesList() {
       await api.delete(`/api/pases/${id}`);
       setPases(pases.filter(p => p.id !== id));
     } catch (err) {
-      alert('Error al eliminar el pase');
+      alert(err.response?.data?.error || 'Error al eliminar el pase');
     }
   };
 
@@ -50,7 +52,7 @@ export default function PasesList() {
       setEditandoId(null);
       setNuevoNombre('');
     } catch (err) {
-      alert('Error al actualizar el pase');
+      alert(err.response?.data?.error || 'Error al actualizar el pase');
     }
   };
 
@@ -62,39 +64,35 @@ export default function PasesList() {
   const imprimir = () => window.print();
 
   return (
-    <div className="p-6 max-w-6xl mx-auto text-gray-900">
-      <div className="flex justify-between items-center mb-4 no-print">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto text-gray-900">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 no-print">
         <div>
-          <h1 className="text-3xl font-bold">Pases – {acto?.nombre}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Pases – {acto?.nombre}</h1>
           {acto && (
-            <p className="text-gray-600">
-              {new Date(acto.fecha).toLocaleDateString()} • {acto.hora} • {acto.lugar}
+            <p className="text-gray-600 text-sm md:text-base">
+              {acto.fecha.split('-').reverse().join('/')} • {acto.hora} • {acto.lugar}
             </p>
           )}
         </div>
-        <div className="space-x-2">
-          <button onClick={() => navigate('/admin')} className="bg-gray-500 text-white px-4 py-2 rounded">
-            Volver
-          </button>
-          <button onClick={imprimir} className="bg-blue-600 text-white px-4 py-2 rounded">
-            Imprimir todos
-          </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => navigate('/admin')} className="bg-gray-500 text-white px-4 py-2 rounded text-sm">Volver</button>
+          <button onClick={imprimir} className="bg-blue-600 text-white px-4 py-2 rounded text-sm">Imprimir</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {pases.map(pase => (
           <div key={pase.id} className="border rounded-lg p-4 text-center bg-white shadow">
             <img
-              src={`/api/pases/${pase.id}/qr`}
+              src={`${API_URL}/api/pases/${pase.id}/qr`}
               alt={`QR Pase #${pase.numeroInvitado}`}
-              className="mx-auto w-48 h-48"
+              className="mx-auto w-32 h-32 md:w-48 md:h-48"
             />
-            <p className="font-semibold mt-2 text-gray-900">{pase.graduando.nombre}</p>
-            <p className="text-sm text-gray-600">Invitado #{pase.numeroInvitado}</p>
+            <p className="font-semibold mt-2 text-sm md:text-base">{pase.graduando.nombre}</p>
+            <p className="text-xs md:text-sm text-gray-600">Invitado #{pase.numeroInvitado}</p>
 
-            {/* Edición del nombre del invitado */}
-            {editandoId === pase.id ? (
+            {/* Edición del nombre (solo admin) */}
+            {rol === 'admin' && editandoId === pase.id ? (
               <div className="mt-2">
                 <input
                   type="text"
@@ -104,12 +102,8 @@ export default function PasesList() {
                   className="border p-1 rounded text-sm w-full mb-1"
                 />
                 <div className="flex justify-center space-x-2">
-                  <button onClick={() => guardarEdicion(pase.id)} className="bg-green-500 text-white px-2 py-1 rounded text-xs">
-                    Guardar
-                  </button>
-                  <button onClick={cancelarEdicion} className="bg-gray-400 text-white px-2 py-1 rounded text-xs">
-                    Cancelar
-                  </button>
+                  <button onClick={() => guardarEdicion(pase.id)} className="bg-green-500 text-white px-2 py-1 rounded text-xs">Guardar</button>
+                  <button onClick={cancelarEdicion} className="bg-gray-400 text-white px-2 py-1 rounded text-xs">Cancelar</button>
                 </div>
               </div>
             ) : (
@@ -117,25 +111,41 @@ export default function PasesList() {
                 {pase.nombreInvitado ? (
                   <p className="text-sm text-gray-800 font-medium">{pase.nombreInvitado}</p>
                 ) : (
-                  <p className="text-xs text-gray-400">Sin nombre asignado</p>
+                  <p className="text-xs text-gray-400">Sin nombre</p>
                 )}
-                <div className="mt-2 flex justify-center space-x-2">
-                  <button onClick={() => iniciarEdicion(pase)} className="bg-yellow-500 text-white px-2 py-1 rounded text-xs">
-                    Editar nombre
+                <div className="mt-2 flex flex-wrap justify-center gap-1">
+                  {/* Compartir (todos los roles) */}
+                  <button
+                    onClick={() => {
+                      const enlace = `${window.location.origin}/?pase=${pase.codigoQR}`;
+                      if (navigator.share) {
+                        navigator.share({ title: 'Pase', url: enlace }).catch(() => {});
+                      } else {
+                        navigator.clipboard.writeText(enlace).then(() => alert('Enlace copiado'));
+                      }
+                    }}
+                    className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                  >
+                    Compartir
                   </button>
-                  <button onClick={() => eliminarPase(pase.id)} className="bg-red-500 text-white px-2 py-1 rounded text-xs">
-                    Eliminar
-                  </button>
+
+                  {/* Editar y Eliminar (solo admin) */}
+                  {rol === 'admin' ? (
+                    <>
+                      <button onClick={() => iniciarEdicion(pase)} className="bg-yellow-500 text-white px-2 py-1 rounded text-xs">Editar</button>
+                      <button onClick={() => eliminarPase(pase.id)} className="bg-red-500 text-white px-2 py-1 rounded text-xs">Eliminar</button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-400 italic self-center">Solo admin puede modificar</span>
+                  )}
                 </div>
               </>
             )}
-
-            <p className="text-xs text-gray-500 mt-1">Código: {pase.codigoQR.slice(0, 8)}...</p>
+            <p className="text-xs text-gray-500 mt-1">ID: {pase.codigoQR.slice(0, 8)}...</p>
           </div>
         ))}
       </div>
 
-      {/* Estilos para impresión */}
       <style>{`
         @media print {
           .no-print { display: none; }

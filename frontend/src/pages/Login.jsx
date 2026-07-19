@@ -14,17 +14,31 @@ export default function Login() {
       await login(correo, pass);
       navigate('/admin');
     } catch {
-      alert('Error al iniciar sesión');
+      alert('Error de inicio de sesión');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-900">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl mb-4">Login Administración</h2>
-        <input className="w-full border p-2 mb-3 text-gray-900" type="email" placeholder="Correo" value={correo} onChange={e => setCorreo(e.target.value)} />
-        <input className="w-full border p-2 mb-3 text-gray-900" type="password" placeholder="Contraseña" value={pass} onChange={e => setPass(e.target.value)} />
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">Ingresar</button>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <form onSubmit={handleSubmit} className="bg-white p-6 md:p-8 rounded shadow-md w-full max-w-sm">
+        <h2 className="text-2xl md:text-3xl mb-6 text-center font-bold text-gray-900">Iniciar Sesión</h2>
+        <input
+          className="w-full border p-3 mb-3 text-sm md:text-base text-gray-900"
+          type="email"
+          placeholder="Correo electrónico"
+          value={correo}
+          onChange={e => setCorreo(e.target.value)}
+        />
+        <input
+          className="w-full border p-3 mb-4 text-sm md:text-base text-gray-900"
+          type="password"
+          placeholder="Contraseña"
+          value={pass}
+          onChange={e => setPass(e.target.value)}
+        />
+        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition duration-200">
+          Ingresar
+        </button>
       </form>
     </div>
   );

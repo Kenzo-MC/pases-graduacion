@@ -12,5 +12,9 @@ app.use('/api/graduandos', require('./routes/graduandos'));
 app.use('/api/pases', require('./routes/pases'));
 app.use('/api/validar', require('./routes/validar'));
 
+app.get('/api/health', (_, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend listo en http://localhost:${PORT}`));

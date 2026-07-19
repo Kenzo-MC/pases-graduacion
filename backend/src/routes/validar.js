@@ -1,14 +1,22 @@
 const express = require('express');
+const auth = require('../middlewares/auth');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.post('/', async (req, res) => {
+// Ruta protegida: solo usuarios con token
+router.post('/', auth, async (req, res) => {
+  // Verificar que el rol sea admin o validador (dentro de la función)
+  if (req.rol !== 'admin' && req.rol !== 'validador') {
+    return res.status(403).json({ valido: false, mensaje: 'No tienes permiso para validar accesos' });
+  }
+
   const { codigoQR, puerta } = req.body;
   const pase = await prisma.pase.findUnique({
     where: { codigoQR },
     include: { graduando: { include: { acto: true } } }
   });
+
   if (!pase) return res.json({ valido: false, mensaje: 'Pase no encontrado' });
   if (pase.utilizado) return res.json({ valido: false, mensaje: 'Pase ya utilizado' });
 

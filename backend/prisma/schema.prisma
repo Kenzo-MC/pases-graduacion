@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Usuario {
@@ -19,7 +19,7 @@ model Usuario {
 model ActoGraduacion {
   id                     Int      @id @default(autoincrement())
   nombre                 String
-  fecha                  DateTime
+  fecha                  String
   hora                   String
   lugar                  String
   aforoMaximo            Int
@@ -33,6 +33,8 @@ model Graduando {
   id        Int      @id @default(autoincrement())
   cedula    String   @unique
   nombre    String
+  apellido  String   @default("")   
+  carrera   String   @default("")   
   correo    String
   actoId    Int
   acto      ActoGraduacion @relation(fields: [actoId], references: [id])
@@ -51,3 +53,4 @@ model Pase {
   puerta         String?
   createdAt      DateTime  @default(now())
 }
+
