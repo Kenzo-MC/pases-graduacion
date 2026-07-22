@@ -19,7 +19,7 @@ router.post('/upload/:actoId', auth, upload.single('file'), async (req, res) => 
 
   // Leer el archivo CSV
   fs.createReadStream(req.file.path)
-    .pipe(csv())
+    .pipe(csv({ mapHeaders: ({ header }) => header.toLowerCase() }))
     .on('data', (row) => {
       linea++;
       if (!row.cedula || !row.nombre || !row.correo) {
