@@ -65,17 +65,17 @@ export default function Admin() {
   };
 
   const subirCSV = async () => {
-    if (!file || !selectedActo) return alert('Selecciona acto y archivo');
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      await api.post(`/api/graduandos/upload/${selectedActo}`, fd);
-      alert('Graduandos cargados');
-      setFile(null);
-    } catch (err) {
-      alert(err.response?.data?.error || 'Error al subir CSV');
-    }
-  };
+  if (!file || !selectedActo) return alert('Selecciona acto y archivo');
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const res = await api.post(`/api/graduandos/upload/${selectedActo}`, fd);
+    alert(res.data.message); 
+    setFile(null);
+  } catch (err) {
+    alert(err.response?.data?.error || 'Error al subir CSV');
+  }
+};
 
   const generarPases = async () => {
     if (!selectedActo) return;

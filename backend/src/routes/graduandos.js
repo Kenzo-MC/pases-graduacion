@@ -14,16 +14,16 @@ router.post('/upload/:actoId', auth, upload.single('file'), async (req, res) => 
   }
   const { actoId } = req.params;
   const results = [];
-  const errores = [];
+  const erroresLectura = [];
   let linea = 0;
 
+  // Leer el archivo CSV
   fs.createReadStream(req.file.path)
     .pipe(csv())
     .on('data', (row) => {
       linea++;
-      // Validar que tenga las columnas mínimas
       if (!row.cedula || !row.nombre || !row.correo) {
-        errores.push(`Línea ${linea}: faltan campos obligatorios`);
+        erroresLectura.push(`Línea ${linea}: faltan campos obligatorios`);
         return;
       }
       results.push({
@@ -36,19 +36,38 @@ router.post('/upload/:actoId', auth, upload.single('file'), async (req, res) => 
       });
     })
     .on('end', async () => {
-      try {
-        if (results.length > 0) {
-          await prisma.graduando.createMany({ data: results });
-        }
-        fs.unlinkSync(req.file.path);
-        res.json({
-          message: `${results.length} graduandos cargados. ${errores.length} líneas con error.`,
-          errores: errores.slice(0, 10) // mostrar solo los primeros 10 errores
+      fs.unlinkSync(req.file.path); // eliminar archivo temporal
+
+      if (results.length === 0) {
+        return res.json({
+          message: `No se encontraron registros válidos. ${erroresLectura.length} líneas con error de formato.`,
+          errores: erroresLectura.slice(0, 10)
         });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al guardar los graduandos. Posible cédula duplicada.' });
       }
+
+      // Insertar uno a uno para detectar duplicados
+      let insertados = 0;
+      const erroresInsercion = [];
+
+      for (const g of results) {
+        try {
+          await prisma.graduando.create({ data: g });
+          insertados++;
+        } catch (error) {
+          if (error.code === 'P2002') { // violación de unicidad (cédula duplicada)
+            erroresInsercion.push(`Cédula duplicada: ${g.cedula}`);
+          } else {
+            erroresInsercion.push(`Error en ${g.cedula}: ${error.message}`);
+          }
+        }
+      }
+
+      res.json({
+        message: `${insertados} graduandos cargados correctamente. ${erroresLectura.length + erroresInsercion.length} errores.`,
+        insertados,
+        erroresLectura: erroresLectura.slice(0, 10),
+        erroresInsercion: erroresInsercion.slice(0, 20)
+      });
     })
     .on('error', (error) => {
       console.error(error);
