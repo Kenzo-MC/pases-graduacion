@@ -42,13 +42,23 @@ router.post('/register', auth, async (req, res) => {
   });
   res.status(201).json({ id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol });
 });
-// Eliminar un usuario (solo admin)
+// Eliminar un usuario (solo admin, no se puede eliminar al admin principal)
 router.delete('/usuarios/:id', auth, async (req, res) => {
   if (req.rol !== 'admin') {
     return res.status(403).json({ error: 'Solo el administrador puede eliminar usuarios' });
   }
 
   const { id } = req.params;
+
+  // Verificar que el usuario a eliminar no sea el admin principal
+  const usuario = await prisma.usuario.findUnique({ where: { id: parseInt(id) } });
+  if (!usuario) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+  if (usuario.correo === 'admin@test.com') {
+    return res.status(403).json({ error: 'No se puede eliminar al administrador principal' });
+  }
+
   try {
     await prisma.usuario.delete({ where: { id: parseInt(id) } });
     res.json({ message: 'Usuario eliminado correctamente' });

@@ -75,23 +75,21 @@ const eliminarUsuario = async (id) => {
       <h2 className="text-xl font-semibold mb-3">Usuarios registrados</h2>
       <div className="space-y-2">
         {usuarios.map(u => (
-          <div key={u.id} className="bg-white p-3 rounded shadow flex justify-between items-center">
-            <div>
-              <p className="font-semibold text-sm md:text-base">{u.nombre}</p>
-              <p className="text-xs md:text-sm text-gray-600">{u.correo}</p>
-            </div>
-            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{u.rol}</span>
-            {rol === 'admin' && (
-  <button
-    onClick={() => eliminarUsuario(u.id)}
-    className="bg-red-500 text-white px-2 py-1 rounded text-xs"
-  >
-    Eliminar
-  </button>
-)}
-
-          </div>
-        ))}
+  <div key={u.id} className="bg-white p-3 rounded shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+    <div>
+      <p className="font-semibold text-sm md:text-base">{u.nombre}</p>
+      <p className="text-xs md:text-sm text-gray-600">{u.correo}</p>
+    </div>
+    <div className="flex items-center gap-2">
+      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{u.rol}</span>
+      {u.correo !== 'admin@test.com' && (
+        <button onClick={() => eliminarUsuario(u.id)} className="bg-red-500 text-white px-2 py-1 rounded text-xs">
+          Eliminar
+        </button>
+      )}
+    </div>
+  </div>
+))}
       </div>
     </div>
   );
