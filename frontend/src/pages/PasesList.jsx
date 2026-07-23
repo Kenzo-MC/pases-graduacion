@@ -117,7 +117,7 @@ export default function PasesList() {
                   {/* Compartir (todos los roles) */}
                   <button
                     onClick={() => {
-                      const enlace = `${window.location.origin}/?pase=${pase.codigoQR}`;
+                      const enlace = `${window.location.origin}/#/?pase=${pase.codigoQR}`;
                       if (navigator.share) {
                         navigator.share({ title: 'Pase', url: enlace }).catch(() => {});
                       } else {
