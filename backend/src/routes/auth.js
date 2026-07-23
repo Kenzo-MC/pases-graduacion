@@ -42,4 +42,18 @@ router.post('/register', auth, async (req, res) => {
   });
   res.status(201).json({ id: usuario.id, nombre: usuario.nombre, correo: usuario.correo, rol: usuario.rol });
 });
+// Eliminar un usuario (solo admin)
+router.delete('/usuarios/:id', auth, async (req, res) => {
+  if (req.rol !== 'admin') {
+    return res.status(403).json({ error: 'Solo el administrador puede eliminar usuarios' });
+  }
+
+  const { id } = req.params;
+  try {
+    await prisma.usuario.delete({ where: { id: parseInt(id) } });
+    res.json({ message: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el usuario' });
+  }
+});
 module.exports = router;

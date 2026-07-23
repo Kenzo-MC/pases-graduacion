@@ -32,6 +32,16 @@ export default function Usuarios() {
     alert('Error: ' + (err.response?.data?.error || err.message));
   }
 };
+const eliminarUsuario = async (id) => {
+  if (!window.confirm('¿Eliminar este usuario?')) return;
+  try {
+    await api.delete(`/api/auth/usuarios/${id}`);
+    cargarUsuarios();
+    alert('Usuario eliminado');
+  } catch (err) {
+    alert(err.response?.data?.error || 'Error al eliminar');
+  }
+};
 
   if (rol !== 'admin') return (
     <div className="p-6 text-center text-red-600">
@@ -40,7 +50,7 @@ export default function Usuarios() {
       <button onClick={() => navigate('/admin')} className="mt-4 bg-gray-500 text-white px-4 py-2 rounded">Volver al panel</button>
     </div>
   );
-
+  
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto text-gray-900">
       <div className="flex justify-between items-center mb-6">
@@ -71,6 +81,15 @@ export default function Usuarios() {
               <p className="text-xs md:text-sm text-gray-600">{u.correo}</p>
             </div>
             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{u.rol}</span>
+            {rol === 'admin' && (
+  <button
+    onClick={() => eliminarUsuario(u.id)}
+    className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+  >
+    Eliminar
+  </button>
+)}
+
           </div>
         ))}
       </div>
