@@ -27,14 +27,19 @@ export default function GraduandosPage() {
   };
 
   const crearGraduando = async () => {
-    try {
-      await api.post('/api/graduandos', { ...form, actoId });
-      setForm({ cedula: '', nombre: '', apellido: '', carrera: '', correo: '' });
-      cargarDatos();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Error al crear graduando');
-    }
-  };
+  const { cedula, nombre, apellido, carrera, correo } = form;
+  if (!cedula || !nombre || !apellido || !carrera || !correo) {
+    alert('Todos los campos son obligatorios (cédula, nombre, apellido, carrera, correo).');
+    return;
+  }
+  try {
+    await api.post('/api/graduandos', { ...form, actoId });
+    setForm({ cedula: '', nombre: '', apellido: '', carrera: '', correo: '' });
+    cargarDatos();
+  } catch (err) {
+    alert(err.response?.data?.error || 'Error al crear graduando');
+  }
+};
 
   const eliminarGraduando = async (id) => {
     if (!window.confirm('¿Eliminar graduando y sus pases?')) return;

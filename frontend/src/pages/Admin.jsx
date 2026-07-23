@@ -22,15 +22,19 @@ export default function Admin() {
   useEffect(() => { cargarActos(); }, []);
 
   const crearActo = async () => {
-    try {
-      await api.post('/api/actos', form);
-      cargarActos();
-      alert('Acto creado');
-    } catch (err) {
-      alert(err.response?.data?.error || 'Error al crear acto');
-    }
-  };
-
+  const { nombre, fecha, hora, lugar, aforoMaximo, invitadosPorGraduando } = form;
+  if (!nombre || !fecha || !hora || !lugar || !aforoMaximo || !invitadosPorGraduando) {
+    alert('Todos los campos son obligatorios para crear un acto.');
+    return;
+  }
+  try {
+    await api.post('/api/actos', form);
+    cargarActos();
+    alert('Acto creado');
+  } catch (err) {
+    alert('Error al crear acto');
+  }
+};
   const eliminarActo = async (id) => {
     if (!window.confirm('¿Eliminar acto y todos sus pases?')) return;
     try {

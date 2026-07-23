@@ -18,15 +18,20 @@ export default function Usuarios() {
   useEffect(() => { if (rol === 'admin') cargarUsuarios(); }, []);
 
   const crearUsuario = async () => {
-    try {
-      await api.post('/api/auth/register', form);
-      alert('Usuario creado');
-      setForm({ nombre: '', correo: '', password: '', rol: 'validador' });
-      cargarUsuarios();
-    } catch (err) {
-      alert('Error: ' + (err.response?.data?.error || err.message));
-    }
-  };
+  const { nombre, correo, password, rol } = form;
+  if (!nombre || !correo || !password || !rol) {
+    alert('Todos los campos son obligatorios (nombre, correo, contraseña, rol).');
+    return;
+  }
+  try {
+    await api.post('/api/auth/register', form);
+    alert('Usuario creado');
+    setForm({ nombre: '', correo: '', password: '', rol: 'validador' });
+    cargarUsuarios();
+  } catch (err) {
+    alert('Error: ' + (err.response?.data?.error || err.message));
+  }
+};
 
   if (rol !== 'admin') return (
     <div className="p-6 text-center text-red-600">
