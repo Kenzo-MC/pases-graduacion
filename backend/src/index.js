@@ -3,11 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 const helmet = require('helmet');
 app.use(helmet());
