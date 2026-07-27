@@ -6,16 +6,12 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function PasesList() {
   const { actoId } = useParams();
-  const { api, rol } = useAuth();   // ← obtenemos el rol
+  const { api, rol } = useAuth();
   const navigate = useNavigate();
   const [pases, setPases] = useState([]);
   const [acto, setActo] = useState(null);
   const [editandoId, setEditandoId] = useState(null);
   const [nuevoNombre, setNuevoNombre] = useState('');
-
-  useEffect(() => {
-    cargarDatos();
-  }, [actoId]);
 
   const cargarDatos = async () => {
     try {
@@ -29,6 +25,12 @@ export default function PasesList() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    cargarDatos();
+  }, [actoId]);
+
+  // ... resto de funciones (eliminar, editar, etc.) sin cambios
 
   const eliminarPase = async (id) => {
     if (!window.confirm('¿Seguro que deseas eliminar este pase?')) return;
@@ -63,6 +65,16 @@ export default function PasesList() {
 
   const imprimir = () => window.print();
 
+  // ---- NUEVA FUNCIÓN PARA ACTUALIZAR MANUALMENTE ----
+  const [actualizando, setActualizando] = useState(false);
+  const refrescar = async () => {
+    setActualizando(true);
+    await cargarDatos();
+    setActualizando(false);
+  };
+
+  // ============================================
+
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto text-gray-900">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 no-print">
@@ -76,13 +88,35 @@ export default function PasesList() {
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => navigate('/admin')} className="bg-gray-500 text-white px-4 py-2 rounded text-sm">Volver</button>
+          {/* BOTÓN DE REFRESCAR */}
+          <button
+            onClick={refrescar}
+            disabled={actualizando}
+            className="bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-1"
+          >
+            {actualizando ? 'Actualizando...' : '↻ Actualizar'}
+          </button>
           <button onClick={imprimir} className="bg-blue-600 text-white px-4 py-2 rounded text-sm">Imprimir</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {pases.map(pase => (
-          <div key={pase.id} className="border rounded-lg p-4 text-center bg-white shadow">
+          <div
+            key={pase.id}
+            className={`border rounded-lg p-4 text-center bg-white shadow ${
+              pase.utilizado ? 'border-red-500' : 'border-green-500'
+            }`}
+          >
+            {/* INDICADOR DE ESTADO */}
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-bold px-2 py-1 rounded-full text-white"
+                style={{ backgroundColor: pase.utilizado ? '#dc2626' : '#16a34a' }}
+              >
+                {pase.utilizado ? 'USADO' : 'DISPONIBLE'}
+              </span>
+            </div>
+
             <img
               src={`${API_URL}/api/pases/${pase.id}/qr`}
               alt={`QR Pase #${pase.numeroInvitado}`}
