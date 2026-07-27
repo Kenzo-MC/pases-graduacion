@@ -5,8 +5,9 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
+const loginLimiter = require('../middlewares/rateLimiter');
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { correo, password } = req.body;
   const user = await prisma.usuario.findUnique({ where: { correo } });
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -35,7 +36,11 @@ router.post('/register', auth, async (req, res) => {
   }
   const existe = await prisma.usuario.findUnique({ where: { correo } });
   if (existe) return res.status(400).json({ error: 'El correo ya existe' });
-
+  if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) {
+  return res.status(400).json({ 
+    error: 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número' 
+  });
+}
   const hashed = await bcrypt.hash(password, 10);
   const usuario = await prisma.usuario.create({
     data: { nombre, correo, password: hashed, rol }

@@ -3,8 +3,14 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+const allowedOrigins = [process.env.FRONTEND_URL || 'http://localhost:5173'];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json());
+const helmet = require('helmet');
+app.use(helmet());
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/actos', require('./routes/actos'));
