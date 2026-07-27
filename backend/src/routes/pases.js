@@ -67,6 +67,7 @@ router.get('/:id/qr', async (req, res) => {
   try {
     const qrImage = await QRCode.toBuffer(pase.codigoQR, { width: 300, margin: 2 });
     res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Access-Control-Allow-Origin', '*'); 
     res.send(qrImage);
   } catch (err) {
     res.status(500).json({ error: 'Error al generar QR' });
