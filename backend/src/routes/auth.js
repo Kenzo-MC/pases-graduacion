@@ -5,9 +5,8 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
-const loginLimiter = require('../middlewares/rateLimiter');
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
   const { correo, password } = req.body;
   const user = await prisma.usuario.findUnique({ where: { correo } });
   if (!user || !(await bcrypt.compare(password, user.password))) {

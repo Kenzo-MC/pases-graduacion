@@ -6,10 +6,8 @@ const auth = require('../middlewares/auth');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
-const upload = multer({
-  dest: 'uploads/',
-  limits: { fileSize: 5 * 1024 * 1024 } // 5 MB máximo
-});
+const upload = multer({ dest: 'uploads/' });
+
 router.post('/upload/:actoId', auth, upload.single('file'), async (req, res) => {
   if (!req.file) {
   return res.status(400).json({ error: 'Archivo no proporcionado o demasiado grande (máx. 5 MB).' });
